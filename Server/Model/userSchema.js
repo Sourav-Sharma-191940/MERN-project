@@ -1,5 +1,6 @@
 // userSchema is used to define the datatype of the data which we are storing in the database
 const mongoose = require('mongoose')
+const bcrypt = require('bcryptjs'); //used to incrept password to hash
 const userSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -26,7 +27,17 @@ const userSchema = new mongoose.Schema({
         require: true
     }
 })
+
+//hashing password
+// here "save" is a method in auth.js before which we are hashing password before saving to db
+userSchema.pre('save', async function(next){
+    if (this.isModified('password')){
+        this.password = await bcrypt.hash(this.password, 12);
+        this.cpassword = await bcrypt.hash(this.cpassword, 12);
+    }
+    next();
+})
+
 // Creating a collection in mongodb with name "User" 
 const User = mongoose.model('USER', userSchema);
-
 module.exports = User;
